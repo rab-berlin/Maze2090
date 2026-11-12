@@ -2,7 +2,7 @@
 # Setzt die Farbmatrix und endet: Waende gelb, Boden blau (unten 8, 6, 4 LEDs).
 # Einmal nach dem Einschalten des ESP starten ("Run"), die Matrix muss eingeschaltet sein ("LED on").
 # Fuer weitere RUNs ist es nicht noetig. Nach einer Aenderung der Farben hier: noch einmal starten, dann RUN.
-# Die Stirnwand faerbt das Programm selbst (oliv).
+# Die Stirnwand (oliv) und das Loch am Ausgang (rot) faerbt das Programm selbst.
 
 W = "gelb"       # Waende
 B = "blau"       # Boden
