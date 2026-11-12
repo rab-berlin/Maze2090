@@ -2,7 +2,7 @@
 
 3D-Irrgarten für den Busch Microtronic 2090 mit dem [ESP2090 Studio](https://github.com/rab-berlin/ESP2090) (8x8-LED-Matrix mit Farben): Blick aus der Ich-Perspektive wie bei *3D Monster Maze*, bedient mit den Tasten des 2090.
 
-- 255 Programmschritte, 1 frei
+- 253 Programmschritte, 3 frei
 - Dateien: [irrgarten.mic](irrgarten.mic), das kommentierte Listing, und das Userscript [irrgarten_farben.py](irrgarten_farben.py) für die Farben
 - Getestet im [Emulator2090](https://github.com/rab-berlin/Emulator2090), noch nicht am Gerät
 
@@ -43,7 +43,7 @@ Dass nach dem Finden des Ausgangs gleich ein neuer Irrgarten kommt, scheint viel
 2. Einmal nach dem Einschalten des ESP: das Userscript `irrgarten_farben.py` mit **Run** starten. Es setzt die Farben (Wände gelb, Boden blau) und endet sofort.
 3. RESET, `HALT` `NEXT` `00` `RUN`. Nach etwa 6 Sekunden steht der erste Blick.
 
-Für jeden weiteren RUN reichen RESET und RUN: Das Programm holt die Farben selbst vom Stapel der Matrix zurück. Nur wenn zwischendurch ein anderes Programm den Farbstapel benutzt hat, den ESP neu starten und das Userscript noch einmal laufen lassen.
+Für jeden weiteren RUN reichen RESET und RUN. Das Userscript braucht es nur noch einmal, wenn die Farben darin geändert wurden, wenn ein anderes Programm die Farben der Matrix verändert hat oder wenn der RESET mitten im Zeichnen kam.
 
 Die Matrix muss wach sein. Hat ein anderes Programm sie schlafen gelegt, wartet der Irrgarten, bis sie geweckt wird.
 
@@ -51,10 +51,10 @@ Die Matrix muss wach sein. Hat ein anderes Programm sie schlafen gelegt, wartet 
 
 ## Farben ändern
 
-- **Wände und Boden:** im Userscript, `W = "gelb"` und `B = "blau"`. Möglich sind die Farbnamen von `setColors`. Hebt sich das dunkle Loch am Ausgang zu wenig vom blauen Boden ab, hilft `B = "tuerkis"`.
+- **Wände und Boden:** im Userscript, `W = "gelb"` und `B = "blau"`. Möglich sind die Farbnamen von `setColors`. Nach einer Änderung das Userscript noch einmal starten, dann RESET und RUN. Hebt sich das dunkle Loch am Ausgang zu wenig vom blauen Boden ab, hilft `B = "tuerkis"`.
 - **Stirnwand:** im Programm an Adresse 01, Befehl `1D8`. Die mittlere Ziffer ist die Farbnummer der Matrix (D = oliv).
 
 ## Technik
 
 - **Speicher:** 1 Bit je Raum in den 16 Speicherregistern M0-MF. Bit 1 heißt Durchgang nach Osten. Die Bits teilen jede Reihe in Stücke, und aus jedem Stück führt genau ein Durchgang nach Norden: in den ungeraden Reihen am Ostende, in den geraden am Westende. Dadurch zeigen die Winkel reihenweise abwechselnd nach links und rechts.
-- **Zeichnen:** Am Start holt das Programm die letzte Sicherung der Farben vom Stapel der Matrix und legt sie wieder darauf. Je Blick holt das Programm sie zurück, sendet ein Bild im Blockmodus (Wände und Boden) und zeichnet die Stirnwand als Rechteck.
+- **Zeichnen:** Am Start legt das Programm die Farben des Userscripts auf den Stapel der Matrix. Je Blick sendet es ein Bild im Blockmodus (Wände und Boden) und zeichnet die Stirnwand als Rechteck. Gleich danach holt es die Farben vom Stapel zurück. Das ändert die Anzeige nicht, die Stirnwand bleibt sichtbar, aber im Speicher der Matrix stehen wieder die Grundfarben.
