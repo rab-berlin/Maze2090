@@ -23,15 +23,15 @@ Für jeden weiteren RUN reichen RESET und RUN. Das Userscript braucht es nur noc
 
 Die Matrix muss wach sein. Hat ein anderes Programm sie schlafen gelegt, wartet der Irrgarten, bis sie geweckt wird.
 
-**Ohne Userscript** läuft das Programm auch und bleibt spielbar: Seitenwände und Boden sind dann alle rot, die Standardfarbe der Matrix. Stirnwand und Loch färbt das Programm selbst, sie bleiben blau und dunkel. So sieht es auch im Emulator2090 aus, der keine Userscripts kennt.
+**Ohne Userscript** läuft das Programm auch und bleibt spielbar: Seitenwände und Boden sind dann alle rot, die Standardfarbe der Matrix. Stirnwand und Loch färbt das Programm selbst, die Stirnwand ist dann oliv, das Loch dunkel. So sieht es auch im Emulator2090 aus, der keine Userscripts kennt.
 
 ## Bild
 
 - **Sichttiefe:** 3 Räume. Bleibt die Mitte dunkel, geht der Gang noch weiter.
-- **Ringe nach Entfernung:** Seitenwände und Boden eines Raums bilden einen Ring in einer Farbe, zur Ferne hin dunkler: weiß, gelb, orange für den 1., 2. und 3. Raum. Das gibt den Eindruck eines Tunnels.
-- **Boden:** die untersten drei Zeilen mit 8, 6 und 4 LEDs.
-- **Seitenwände:** Spalte 1/8, 2/7 und 3/6 für den 1., 2. und 3. Raum. Eine Öffnung zur Seite bleibt dunkel.
-- **Stirnwand:** blau, ein Quadrat in der Mitte mit 6, 4 oder 2 LEDs Kante, je nach Entfernung.
+- **Helligkeit nach Entfernung:** Seitenwände und Boden werden zur Ferne hin in drei Stufen dunkler, wie Licht, das sich im Gang verliert.
+- **Seitenwände:** weiß, in Spalte 1/8, 2/7 und 3/6 für den 1., 2. und 3. Raum. Eine Öffnung zur Seite bleibt dunkel.
+- **Boden:** blau, die untersten drei Zeilen mit 8, 6 und 4 LEDs.
+- **Stirnwand:** dunkles Gelb, ein Quadrat in der Mitte mit 6, 4 oder 2 LEDs Kante, je nach Entfernung.
 - **Ausgang:** ein dunkles Loch im Boden direkt vor der Stirnwand, so breit wie sie.
 
 ## Bedienung
@@ -53,8 +53,9 @@ Dass nach dem Finden des Ausgangs gleich ein neuer Irrgarten kommt, scheint viel
 
 ## Farben ändern
 
-- **Seitenwände und Boden:** im Userscript, `N, M, F` für die Ringe nah, mittel, fern. Möglich sind die Farbnamen von `setColors`. Nach einer Änderung das Userscript noch einmal starten, dann RESET und RUN.
-- **Stirnwand:** im Programm an Adresse 88, Befehl `168`. Die mittlere Ziffer ist die Farbnummer der Matrix (6 = blau).
+- **Seitenwände, Boden und Stirnwand:** im Userscript, `WAND`, `BODEN` (je nah, mittel, fern) und `STIRNWAND` als Farbwerte (r, g, b). Nach einer Änderung das Userscript noch einmal starten, dann RESET und RUN.
+- **Wie das geht:** `setColors` kennt nur zehn Farbnamen. Das Script legt deshalb mit `setPalette` eigene Werte auf einige Namen (weiß, magenta, violett, blau, türkis, grün) und auf Farbe 13 für die Stirnwand. Das gilt bis zum Neustart des ESP, auch für andere Programme, die diese Farben benutzen.
+- **Stirnwand im Programm:** an Adresse 88, Befehl `1D8` (Farbe 13). Ohne Userscript ist sie oliv.
 - **Loch am Ausgang:** im Programm an Adresse 7C, Befehl `108` (0 = schwarz).
 
 ## Immer an der Wand lang...
