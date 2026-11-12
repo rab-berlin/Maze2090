@@ -2,13 +2,13 @@
 
 3D-Irrgarten für den Busch Microtronic 2090 mit dem [ESP2090 Studio](https://github.com/rab-berlin/ESP2090) (8x8-LED-Matrix mit Farben): Blick aus der Ich-Perspektive wie bei *3D Monster Maze*, bedient mit den Tasten des 2090.
 
-- 256 Programmschritte, 0 frei
-- Datei: [irrgarten.mic](irrgarten.mic), das kommentierte Listing
+- 253 Programmschritte, 3 frei
+- Dateien: [irrgarten.mic](irrgarten.mic), das kommentierte Listing, und das Userscript [irrgarten_farben.py](irrgarten_farben.py) für die Farben
 - Getestet im [Emulator2090](https://github.com/rab-berlin/Emulator2090), noch nicht am Gerät
 
 ## Spiel
 
-- **Irrgarten:** 8x8 Räume, bei jedem Start neu ausgewürfelt. Zwischen zwei Räumen gibt es immer genau einen Weg.
+- **Irrgarten:** 8x8 Räume, jedes Mal neu ausgewürfelt. Zwischen zwei Räumen gibt es immer genau einen Weg.
 - **Start:** in einem zufälligen Raum mit zufälliger Blickrichtung.
 - **Ausgang:** der Raum in der Südwest-Ecke. Ist er im Blick, hat der Boden direkt vor der Stirnwand ein dunkles Loch.
 - **Geschafft:** Wer in den Ausgang geht, bekommt sofort einen neuen Irrgarten.
@@ -33,19 +33,20 @@ Ein Blick braucht etwa 2,3 Sekunden, dann wartet das Programm auf die nächste T
 
 ## Start
 
-RESET, Matrix einschalten („LED on“ in der Weboberfläche, im Emulator2090 Taste `m`), `HALT` `NEXT` `00` `RUN`. Nach etwa 7 Sekunden steht der erste Blick. Die Matrix muss wach sein: Hat ein anderes Programm sie schlafen gelegt, wartet der Irrgarten, bis sie geweckt wird.
+1. RESET, Matrix einschalten („LED on“ in der Weboberfläche).
+2. Das Userscript `irrgarten_farben.py` mit **Run** starten. Es setzt die Farben (Wände weiß, Boden türkis) und endet sofort.
+3. `HALT` `NEXT` `00` `RUN`. Nach etwa 6 Sekunden steht der erste Blick.
+
+Das Userscript gehört vor jeden RUN, aber nicht zwischen zwei Irrgärten: Nach einem RESET steht sonst noch die letzte Stirnwand als dunkelblauer Rest in den Farben. Die Matrix muss wach sein. Hat ein anderes Programm sie schlafen gelegt, wartet der Irrgarten, bis sie geweckt wird.
+
+Der Emulator2090 kennt keine Userscripts. Dort stimmt die Form des Bildes, aber Wände und Boden haben dieselbe Farbe.
 
 ## Farben ändern
 
-Die mittlere Ziffer des Befehls ist die Farbnummer der Matrix:
-
-| Adresse | Befehl | Farbe |
-|---|---|---|
-| 08 | `198` | Wände (9 = weiß); möglich sind nur 0, 1, 4, 5, 8, 9, C, D |
-| 0C | `158` | Boden (5 = türkis) |
-| 17 | `1C8` | Stirnwand (C = dunkelblau) |
+- **Wände und Boden:** im Userscript, `W = "weiss"` und `B = "tuerkis"`. Möglich sind die Farbnamen von `setColors`.
+- **Stirnwand:** im Programm an Adresse 01, Befehl `1C8`. Die mittlere Ziffer ist die Farbnummer der Matrix (C = dunkelblau).
 
 ## Technik
 
-- **Speicher:** 1 Bit je Raum in den 16 Speicherregistern M0-MF. Bit 1 heißt Durchgang nach Osten, Bit 0 Durchgang nach Norden (Binärbaum-Verfahren). Die Wände nach Westen und Süden ergeben sich aus den Nachbarn.
-- **Zeichnen:** Die Farben der Matrix werden einmal angelegt und auf deren Stapel gelegt. Je Blick holt das Programm sie zurück, sendet ein Bild im Blockmodus (Wände und Boden) und zeichnet die Stirnwand als Rechteck.
+- **Speicher:** 1 Bit je Raum in den 16 Speicherregistern M0-MF. Bit 1 heißt Durchgang nach Osten. Die Bits teilen jede Reihe in Stücke, und aus jedem Stück führt genau ein Durchgang nach Norden: in den ungeraden Reihen am Ostende, in den geraden am Westende. Dadurch zeigen die Winkel reihenweise abwechselnd nach links und rechts.
+- **Zeichnen:** Die Farben des Userscripts legt das Programm am Start auf den Stapel der Matrix. Je Blick holt das Programm sie zurück, sendet ein Bild im Blockmodus (Wände und Boden) und zeichnet die Stirnwand als Rechteck.
