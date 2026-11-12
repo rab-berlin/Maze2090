@@ -47,7 +47,7 @@ Ein Blick braucht etwa 3 Sekunden, dann wartet das Programm auf die nächste Tas
 
 Der Irrgarten ist komplex genug, um sich zu verirren - Mission accomplished 😄 
 
-Wenn du Glück hast, ist deine Startposition nahe am Ausgang, und wenn du richtig Glück hast, kannst du den Ausgang sogar direkt sehen. Wenn nicht, dann solltest du [eine Strategie](#immer-an-der-wand-lang) haben... da Ariadne gerade Urlaub hat, vielleicht einfach Papier und Bleistift, ganz wie früher...
+Wenn du Glück hast, ist deine Startposition nahe am Ausgang, und wenn du richtig Glück hast, kannst du den Ausgang sogar direkt sehen. Wenn nicht, dann solltest du [eine Strategie](#immer-an-der-wand-lang) haben... da Ariadne gerade ihren Faden verloren hat, vielleicht einfach Papier und Bleistift, ganz wie früher...
 
 Dass nach dem Finden des Ausgangs gleich ein neuer Irrgarten kommt, scheint vielleicht etwas unfair - ist aber letztlich nur eine Analogie des Lebens.
 
