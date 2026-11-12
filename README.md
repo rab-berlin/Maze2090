@@ -29,7 +29,7 @@
 | 3 | rechts drehen |
 | 0 | umdrehen |
 
-Ein Blick braucht etwa 2,3 Sekunden, dann wartet das Programm auf die nächste Taste. Taster werden nicht gebraucht; Eingang 1 ist REQ der Matrix.
+Ein Blick braucht etwa 2,5 Sekunden, dann wartet das Programm auf die nächste Taste. Taster werden nicht gebraucht; Eingang 1 ist REQ der Matrix.
 
 ## Start
 
