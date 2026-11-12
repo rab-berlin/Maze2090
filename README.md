@@ -110,3 +110,21 @@ Mit der Taste 2 in Blick 13 geht man in den Ausgang, und das Programm würfelt d
 
 - **Speicher:** 1 Bit je Raum in den 16 Speicherregistern M0-MF. Bit 1 heißt Durchgang nach Osten. Die Bits teilen jede Reihe in Stücke, und aus jedem Stück führt genau ein Durchgang nach Norden: in den ungeraden Reihen am Ostende, in den geraden am Westende. Dadurch zeigen die Winkel reihenweise abwechselnd nach links und rechts.
 - **Zeichnen:** Am Start legt das Programm die Farben des Userscripts auf den Stapel der Matrix. Je Blick sendet es ein Bild im Blockmodus (Wände und Boden) und zeichnet die Stirnwand als Rechteck. Das Loch am Ausgang färbt es vorher schwarz, nur in den Farben der Matrix: Seine LEDs sind als Boden an, zeigen aber Schwarz, und das Loch erscheint mit der Stirnwand zugleich. Gleich danach holt es die Farben vom Stapel zurück. Das ändert die Anzeige nicht, die Stirnwand bleibt sichtbar, aber im Speicher der Matrix stehen wieder die Grundfarben.
+
+### Der Algorithmus: ein Binärbaum
+
+Der Irrgarten entsteht mit einer Abwandlung des Binärbaum-Verfahrens, des einfachsten bekannten Verfahrens für „perfekte“ Irrgärten (zwischen zwei Räumen gibt es genau einen Weg, keine Schleifen, keine abgeschnittenen Bereiche).
+
+- **Das klassische Verfahren:** Jeder Raum würfelt einmal, ob er einen Durchgang nach Norden oder nach Osten bekommt. In der obersten Reihe geht es nur nach Osten, in der rechten Spalte nur nach Norden. Jeder Raum hängt so an genau einem Nachbarn, und alle Wege führen in die Ecke oben rechts. Das ergibt einen Baum über alle 64 Räume.
+- **Die Form im Programm:** Das Bit eines Raums sagt nur, ob es nach Osten weitergeht. Die Bits teilen jede Reihe in Stücke zusammenhängender Räume. Aus jedem Stück führt genau ein Durchgang nach Norden: in den ungeraden Reihen am rechten Ende, in den geraden am linken. Am Ergebnis ändert das nichts, es bleibt ein Baum, aber die Richtung wechselt von Reihe zu Reihe.
+- **Warum die Abwandlung:** Der klassische Binärbaum hat einen sichtbaren schrägen Zug. Lange freie Gänge an der Ober- und Ostkante, alle Sackgassen zeigen nach Süden und Westen, und wer das weiß, findet schnell heraus. Mit wechselnder Richtung verschwindet der Zug weitgehend. Es kostet 12 Programmschritte, aber kein Bit Speicher.
+- **Warum überhaupt ein Binärbaum:** Er braucht genau 1 Bit je Raum, und jede Reihe wird ausgewürfelt, ohne die anderen anzuschauen. Der Microtronic würfelt eine Reihe mit einem einzigen `RND` und schreibt das Ergebnis direkt in die Speicherregister. Die Wände nach Westen und Süden stehen gar nicht im Speicher, sie ergeben sich aus den Bits der Nachbarn. So passen 8x8 Räume in die 16 Speicherregister, und das Würfeln braucht nur 14 Schritte. Die 16 Arbeitsregister bleiben frei für Spieler, Blick und Bild.
+
+### Andere Verfahren und warum sie hier nicht gehen
+
+- **Tiefensuche („Recursive Backtracker“):** Lange, gewundene Gänge mit wenigen Sackgassen, für Spiele wie dieses das beliebteste Verfahren. Es braucht aber einen Merker „schon besucht“ für jeden Raum und einen Stapel für den Rückweg, bis zu 64 Einträge. Dafür ist im 2090 kein Platz.
+- **Prim und Kruskal:** Viele kurze Sackgassen, keine Vorzugsrichtung. Sie führen Listen offener Wände oder Mengen verbundener Räume. Ohne indirekte Adressierung ist jeder Zugriff auf einen beliebigen Raum teuer, das sprengt die 256 Schritte.
+- **Wilson und Aldous-Broder:** Jeder mögliche Irrgarten ist gleich wahrscheinlich. Sie laufen zufällig herum, bis alles verbunden ist. Das braucht Besucht-Merker und auf dem 2090 mit 9 ms je Befehl Minuten.
+- **Sidewinder und Eller:** Sie arbeiten wie der Binärbaum Reihe für Reihe, wählen aber den Durchgang nach Norden frei innerhalb eines Stücks. Dafür braucht jeder Raum ein zweites Bit (Osten und Norden getrennt). Mit 64 Bit wären dann nur 32 Räume möglich, etwa 4x8.
+
+Gemeinsam ist allen: mehr als 1 Bit je Raum, Hilfsspeicher oder ein Zugriff auf beliebige Räume. Der 2090 hat dafür weder Register noch Programmschritte übrig. Der abgewandelte Binärbaum ist das Verfahren, das den größten Irrgarten zulässt.
