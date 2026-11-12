@@ -35,6 +35,8 @@ Der Irrgarten ist komplex genug, um sich zu verirren - Mission accomplished 😄
 
 Wenn du Glück hast, ist deine Startposition nahe am Ausgang, und wenn du richtig Glück hast, kannst du den Ausgang sogar direkt sehen. Wenn nicht, dann solltest du eine Strategie haben... da Ariadne gerade Urlaub hat, vielleicht einfach Papier und Bleistift, ganz wie früher...
 
+Dass nach dem Finden des Ausgangs gleich ein neuer Irrgarten kommt, scheint vielleicht etwas unfair - ist aber letztlich nur eine Analogie des Lebens.
+
 ## Start
 
 1. Matrix einschalten („LED on“ in der Weboberfläche).
