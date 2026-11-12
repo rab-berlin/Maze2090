@@ -41,7 +41,7 @@ Für jeden weiteren RUN reichen RESET und RUN: Das Programm holt die Farben selb
 
 Die Matrix muss wach sein. Hat ein anderes Programm sie schlafen gelegt, wartet der Irrgarten, bis sie geweckt wird.
 
-Der Emulator2090 kennt keine Userscripts. Dort stimmt die Form des Bildes, aber Wände und Boden haben dieselbe Farbe.
+**Ohne Userscript** läuft das Programm auch und bleibt spielbar: Wände und Boden sind dann beide rot, die Standardfarbe der Matrix. Die Stirnwand ist weiter dunkelblau, das Loch am Ausgang weiter dunkel. So sieht es auch im Emulator2090 aus, der keine Userscripts kennt.
 
 ## Farben ändern
 
