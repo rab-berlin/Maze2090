@@ -1,0 +1,299 @@
+; irrgarten - 3D-Irrgarten fuer Busch Microtronic 2090 mit dem ESP2090 Studio (8x8-LED-Matrix)
+; Version 06: Start in einem beliebigen der 64 Raeume mit zufaelliger Blickrichtung; kein Wecken der Matrix mehr.
+;   Version 05: Bedienung mit den Tasten des 2090 (KIN) statt mit Tastern; die Matrix bleibt wach.
+;   Bild wie Version 04: Waende weiss, Boden tuerkis (drei Zeilen), Stirnwand dunkelblau als Quadrat in der
+;   Mitte, Ausgang als Loch im Boden direkt vor der Stirnwand.
+;
+; Start: Reset, Matrix einschalten (Weboberflaeche: LED on, Emulator2090: m), RUN.
+;   Der Irrgarten wird ausgewuerfelt, dann werden die Farben angelegt (die Matrix leuchtet kurz ganz in
+;   Wandfarbe, dann erscheint der Boden), nach etwa 5 s kommt der erste Blick.
+; Tasten: 1 links drehen, 2 einen Raum vor, 3 rechts drehen, 0 umdrehen. KIN wartet auf den Tastendruck.
+;   Kein Taster, keine Leitung an Eingang 2-4; Eingang 1 ist REQ der Matrix. Die Matrix muss wach sein:
+;   Hat ein anderes Programm sie schlafen gelegt (ACK 15), wartet das Programm nach dem Auswuerfeln auf REQ,
+;   bis sie geweckt wird (Weboberflaeche oder aus- und einschalten).
+; Irrgarten: 8x8 Raeume mit duennen Waenden, 1 Bit je Raum in M0-MF (Register 2y und 2y+1 = Reihe y,
+;   Bit 0 = linker Raum der Haelfte, wie ein Bild im Blockmodus). Bit 1 = Durchgang nach Osten,
+;   Bit 0 = Durchgang nach Norden (Binaerbaum: jeder Raum hat genau einen der beiden, also gibt es
+;   zwischen zwei Raeumen immer genau einen Weg). Oberste Reihe nur Osten, rechte Spalte nur Norden.
+; Start: zufaellig in einem der 64 Raeume (Reihe und Haelfte aus der ersten Ziffer des letzten RND, Spalte
+;   und Blickrichtung aus der dritten). Liegt er im Ausgang, wird sofort neu gewuerfelt.
+;   Ausgang: der Raum unten links (Suedwest-Ecke).
+;   Ist er im Blick, ist die Bodenzeile direkt unter der Stirnwand in deren Breite dunkel (Loch).
+;   Hineingehen = geschafft: Es wird sofort ein neuer Irrgarten ausgewuerfelt.
+; Bild: Sichttiefe 3 Raeume. Boden = Zeile 1, 2, 3 mit 8, 6, 4 Pixeln. Seitenwaende des 1., 2., 3. Raums:
+;   Spalte 1/8 von Zeile 2 bis 8, Spalte 2/7 von Zeile 3 bis 7, Spalte 3/6 von Zeile 4 bis 6; eine Oeffnung
+;   zur Seite bleibt dunkel. Stirnwand hinter dem 1., 2., 3. Raum: Quadrat in der Mitte mit 6, 4, 2 Pixeln
+;   Kante (Spalte und Zeile 2-7, 3-6, 4-5); es verdeckt den Boden dahinter.
+;   Bleibt die Mitte dunkel, geht der Gang weiter als 3 Raeume.
+;   Farben: Die Farbmatrix wird einmal angelegt (alles Wandfarbe, drei Bodenzeilen) und auf den Stapel
+;   gelegt (ACK 13). Je Blick: Farben vom Stapel holen (peek), ein Bild im Blockmodus (Waende und Boden),
+;   dann zwei Rechtecke ab der Ecke (N,N): erst in Zeichenart 3 (Pixel aus) die unterste Zeile der Stirnwand
+;   - beim Ausgang eine Zeile tiefer und damit auch das Loch -, dann die Stirnwand in Zeichenart 1.
+;   Farben: Wand MOVI #9,X (weiss; nur 0, 1, 4, 5, 8, 9, C, D, weil die Nummer zugleich die Zeichenart
+;   des Fuellbefehls ist), Boden MOVI #5,X (tuerkis), Stirnwand MOVI #C,X (dunkelblau), beide beliebig.
+;
+;   Befehle an die Matrix: warten auf REQ (hoechstens 28 ms), dann ACK und Nibbles - spaetestens 56 ms nach
+;   REQ, der ESP wartet 70 ms. Das Bild hat deshalb seine eigene Warteschleife.
+;
+; Register: RM 8,4,2 = Bit der rechten Wand, SK/SM Raum des Spielers, DM 1,2,4 = Tiefe,
+;   K Register des Raums (2y + Haelfte), MX Bit des Raums, HM Blickrichtung (1 Nord, 2 Ost, 4 Sued, 8 West),
+;   KQ/NV Ein- und Ausgabe von getnib, V/VS Nibble des Raums und des Raums darunter, T Hilfsregister,
+;   L/R Seitenwaende, W Waende des Raums (1 N, 2 O, 4 S, 8 W). DM + 8 = Ausgang im Blick.
+;   Beim Zeichnen: FUNC = ACK, X/Y = Nibbles, Q = REQ, dann F fuer Zeile 1; A1/B1, A2/B2, A6/B6, A7/B7 = Bildzeilen 2, 3, 7, 8.
+;
+F02 ; 00 start:     DISOUT              Anzeige aus: 9,3 ms je Befehl (Takt der Matrix)
+BF0 ; 01            CALL   gen4         Reihe 0-3 in R0-R7 ...
+F0D ; 02            EXRL                ... nach M0-M7
+BF0 ; 03            CALL   gen4         Reihe 4-7
+1F6 ; 04            MOVI   #F,r6        oberste Reihe: ueberall Durchgang nach Osten ...
+177 ; 05            MOVI   #7,r7        ... nur der Raum oben rechts hat keinen
+F0F ; 06            EXRA
+F0E ; 07            EXRM                nach M8-MF; R5 (K) und R7 = erste und dritte Ziffer des letzten RND
+198 ; 08            MOVI   #9,X         Wandfarbe
+BC2 ; 09            CALL   colr
+13F ; 0A            MOVI   #3,FUNC
+BC3 ; 0B            CALL   cmd          ACK 3: ganze Matrix in Wandfarbe (X ist noch 9 = Zeichenart 1)
+158 ; 0C            MOVI   #5,X         Bodenfarbe
+BC2 ; 0D            CALL   colr
+129 ; 0E            MOVI   #2,Y
+098 ; 0F plane:     MOV    Y,X          Bodenzeile Y = 2, 1, 0 von Spalte Y bis 7-Y
+14F ; 10            MOVI   #4,FUNC
+BC3 ; 11            CALL   cmd          Cursor 1 = (Y,Y), Zeichenart 0
+F88 ; 12            INV    X            7-Y mit +8: Zeichenart 1 (Farbe und Pixel an)
+16F ; 13            MOVI   #6,FUNC
+BC3 ; 14            CALL   cmd          Rechteck = Zeile
+5F9 ; 15            ADDI   #F,Y
+D0F ; 16            BRC    plane        2 -> 1 -> 0 mit Uebertrag, dann F ohne
+1C8 ; 17            MOVI   #C,X         Farbe der Stirnwand: bleibt aktiv
+BC2 ; 18            CALL   colr
+1DF ; 19            MOVI   #D,FUNC
+118 ; 1A            MOVI   #1,X
+BC3 ; 1B            CALL   cmd          ACK 13, 1: Farbmatrix auf den Stapel
+07C ; 1C            MOV    r7,T         Zufallsziffer: obere 2 Bit = Spalte in der Haelfte, untere 2 Bit = Blickrichtung
+116 ; 1D            MOVI   #1,MX        Start: Reihe und Haelfte zufaellig (K)
+147 ; 1E            MOVI   #4,HM
+FA6 ; 1F col:       SHL    MX           MX eine Spalte weiter (8 -> 1) ...
+FB6 ; 20            ADC    MX
+5CC ; 21            ADDI   #C,T         ... T/4 + 1 mal; danach ist T = C-F mit den unteren 2 Bit
+D1F ; 22            BRC    col
+C93 ; 23            GOTO   rot          Blickrichtung 13-16 mal drehen, dann view
+051 ; 24 view:      MOV    K,SK         Raum des Spielers merken
+062 ; 25            MOV    MX,SM
+114 ; 26            MOVI   #1,DM
+180 ; 27            MOVI   #8,RM
+10D ; 28            MOVI   #0,L
+10E ; 29            MOVI   #0,R
+058 ; 2A fetch:     MOV    K,KQ         VS = Nibble des Raums darunter
+728 ; 2B            SUBI   #2,KQ
+1F9 ; 2C            MOVI   #F,NV        unter der untersten Reihe: Wand
+D2F ; 2D            BRC    f1
+BCC ; 2E            CALL   getnib
+09B ; 2F f1:        MOV    NV,VS
+058 ; 30            MOV    K,KQ         V = Nibble des Raums
+BCC ; 31            CALL   getnib
+09A ; 32            MOV    NV,V
+1AF ; 33 walls:     MOVI   #A,W         Bit 0: Wand Ost, Durchgang Nord (8 = Wand West, wird unten geprueft) ...
+9D5 ; 34            CMPI   #D,K
+FBF ; 35            ADC    W            ... aber nicht in der obersten Reihe
+0AC ; 36            MOV    V,T
+26C ; 37            AND    MX,T
+E3A ; 38            BRZ    ww
+19F ; 39            MOVI   #9,W         Bit 1: Durchgang Ost, Wand Nord
+06C ; 3A ww:        MOV    MX,T         Nachbar im Westen: hat er einen Durchgang nach Osten?
+F9C ; 3B            SHR    T
+DB8 ; 3C            BRC    wx           Spalte 1 oder 5: Nachbar liegt im Register davor
+2AC ; 3D            AND    V,T
+E40 ; 3E wt:        BRZ    ws
+78F ; 3F            SUBI   #8,W         ja: keine Wand im Westen
+0BC ; 40 ws:        MOV    VS,T         Raum darunter: Durchgang Ost heisst Wand zwischen uns
+26C ; 41            AND    MX,T
+E44 ; 42            BRZ    sides
+54F ; 43            ADDI   #4,W
+0FC ; 44 sides:     MOV    W,T
+FAC ; 45            SHL    T
+FBC ; 46            ADC    T            Waende nach links gedreht: linke Wand liegt auf dem Bit der Blickrichtung
+27C ; 47            AND    HM,T
+E4A ; 48            BRZ    s1
+A4D ; 49            OR     DM,L
+07C ; 4A s1:        MOV    HM,T
+FAC ; 4B            SHL    T
+FBC ; 4C            ADC    T            Blickrichtung nach rechts gedreht
+2FC ; 4D            AND    W,T
+E50 ; 4E            BRZ    s2
+A0E ; 4F            OR     RM,R
+27F ; 50 s2:        AND    HM,W         W wird danach nicht mehr gebraucht
+E9C ; 51            BRZ    next         keine Stirnwand: weiter in den naechsten Raum
+1DF ; 52 draw:      MOVI   #D,FUNC
+198 ; 53            MOVI   #9,X
+BC3 ; 54            CALL   cmd          ACK 13, 9: Farbmatrix vom Stapel holen (die letzte Stirnwand hat sie veraendert)
+37D ; 55            ANDI   #7,L         beim Ausgang hat OR DM,L auch Bit 8 gesetzt
+1E8 ; 56            MOVI   #E,A1        Zeile 2: Boden Spalte 2-4 und Wand in Spalte 1
+AD8 ; 57            OR     L,A1
+1CA ; 58            MOVI   #C,A2        Zeile 3: Boden Spalte 3-4 und Waende in Spalte 1-2
+ADA ; 59            OR     L,A2
+0D0 ; 5A            MOV    L,A6         Zeile 7: Waende in Spalte 1-2
+330 ; 5B            ANDI   #3,A6
+003 ; 5C            MOV    A6,A7        Zeile 8: Wand in Spalte 1
+313 ; 5D            ANDI   #1,A7
+179 ; 5E            MOVI   #7,B1        rechte Haelfte: Zeile 2
+AE9 ; 5F            OR     R,B1
+13B ; 60            MOVI   #3,B2        Zeile 3
+AEB ; 61            OR     R,B2
+0E5 ; 62            MOV    R,B6         Zeile 7
+3C5 ; 63            ANDI   #C,B6
+05F ; 64            MOV    B6,B7        Zeile 8: Wand in Spalte 8 (zweiter Schritt waehrend der Uebertragung)
+FD6 ; 65 fw:        DIN    Q            warten auf REQ
+316 ; 66            ANDI   #1,Q
+E65 ; 67            BRZ    fw
+FE6 ; 68            DOT    Q            ACK 1: Bild
+1F6 ; 69            MOVI   #F,Q         genau ein Befehl Abstand
+FE6 ; 6A            DOT    Q            Zeile 1: Boden, links ...
+38F ; 6B            ANDI   #8,B7        ... und rechts (das F bleibt einen Schritt laenger stehen)
+FE8 ; 6C            DOT    A1
+FE9 ; 6D            DOT    B1
+FEA ; 6E            DOT    A2
+FEB ; 6F            DOT    B2
+FED ; 70            DOT    L
+FEE ; 71            DOT    R
+FED ; 72            DOT    L
+FEE ; 73            DOT    R
+FED ; 74            DOT    L
+FEE ; 75            DOT    R
+FE0 ; 76            DOT    A6
+FE5 ; 77            DOT    B6
+FE3 ; 78            DOT    A7
+FEF ; 79            DOT    B7
+10C ; 7A            MOVI   #0,T
+FEC ; 7B            DOT    T            Ausgaenge auf 0
+048 ; 7C            MOV    DM,X         Stirnwand in Tiefe 1, 2, 4?
+378 ; 7D            ANDI   #7,X
+E8D ; 7E            BRZ    kr
+938 ; 7F            CMPI   #3,X
+FC8 ; 80            SUBC   X            N = 1, 2, 3
+089 ; 81            MOV    X,Y
+14F ; 82            MOVI   #4,FUNC
+BC3 ; 83            CALL   cmd          Cursor 1 = (N,N), Zeichenart 0
+F88 ; 84            INV    X            7-N mit +8
+16F ; 85            MOVI   #6,FUNC
+974 ; 86            CMPI   #7,DM        Carry = Ausgang im Blick
+FC9 ; 87            SUBC   Y            Zeile N, beim Ausgang N-1
+589 ; 88            ADDI   #8,Y         Zeichenart 3: Pixel aus
+BC3 ; 89            CALL   cmd          Rechteck: unterste Zeile der Stirnwand, beim Ausgang auch das Loch darunter
+089 ; 8A            MOV    X,Y          Ecke (7-N, 7-N), nur x mit +8: Zeichenart 1 (aktive Farbe und Pixel an)
+379 ; 8B            ANDI   #7,Y
+BC3 ; 8C            CALL   cmd          Stirnwand
+015 ; 8D kr:        MOV    SK,K         zurueck zum Raum des Spielers (cmd benutzt R6)
+026 ; 8E            MOV    SM,MX
+FFC ; 8F key:       KIN    T            1 links, 2 vor, 3 rechts, 0 umdrehen
+92C ; 90            CMPI   #2,T
+E98 ; 91            BRZ    fwd
+51C ; 92            ADDI   #1,T         T + 1 = 1, 2, 4: zwei, drei, fuenf Vierteldrehungen nach rechts
+FA7 ; 93 rot:       SHL    HM
+FB7 ; 94            ADC    HM
+5FC ; 95            ADDI   #F,T
+D93 ; 96            BRC    rot          herunterzaehlen bis zum Unterlauf
+C24 ; 97            GOTO   view
+914 ; 98 fwd:       CMPI   #1,DM
+E8F ; 99            BRZ    key          Wand
+BA3 ; 9A            CALL   step
+C24 ; 9B            GOTO   view
+FA4 ; 9C next:      SHL    DM
+944 ; 9D            CMPI   #4,DM
+D52 ; 9E            BRC    draw         drei Raeume tief: Schluss (DM = 8)
+F90 ; 9F            SHR    RM
+BA3 ; A0            CALL   step
+D2A ; A1            BRC    fetch        anderes Register: Nibbles holen
+C33 ; A2            GOTO   walls
+927 ; A3 step:      CMPI   #2,HM
+DAE ; A4            BRC    st1          Sued oder West
+EA8 ; A5            BRZ    ste
+7E5 ; A6            SUBI   #E,K         Nord: K + 2 (mit Carry)
+F07 ; A7            RET
+FA6 ; A8 ste:       SHL    MX           Ost
+DAB ; A9            BRC    ste1
+F07 ; AA            RET
+116 ; AB ste1:      MOVI   #1,MX        in die rechte Haelfte
+7F5 ; AC            SUBI   #F,K         K + 1 (mit Carry)
+F07 ; AD            RET
+947 ; AE st1:       CMPI   #4,HM
+EB6 ; AF            BRZ    sts
+F96 ; B0            SHR    MX           West
+DB3 ; B1            BRC    stw1
+F07 ; B2            RET
+186 ; B3 stw1:      MOVI   #8,MX        in die linke Haelfte
+5F5 ; B4            ADDI   #F,K         K - 1 (mit Carry)
+F07 ; B5            RET
+5E5 ; B6 sts:       ADDI   #E,K         Sued: K - 2 (mit Carry)
+F07 ; B7            RET
+058 ; B8 wx:        MOV    K,KQ
+718 ; B9            SUBI   #1,KQ
+DBE ; BA            BRC    wexit        K = 0: der Raum unten links, der Ausgang
+BCC ; BB wx1:       CALL   getnib
+389 ; BC            ANDI   #8,NV
+C3E ; BD            GOTO   wt
+914 ; BE wexit:     CMPI   #1,DM
+E00 ; BF            BRZ    start        der Spieler steht darin: geschafft, neuer Irrgarten
+584 ; C0            ADDI   #8,DM        sonst: DM + 8 = Loch im Boden vor der Stirnwand
+CBB ; C1            GOTO   wx1          (Register F, Bit 8 ist 0: Wand im Westen)
+1EF ; C2 colr:      MOVI   #E,FUNC
+FD6 ; C3 cmd:       DIN    Q            warten auf REQ
+316 ; C4            ANDI   #1,Q
+EC3 ; C5            BRZ    cmd
+FEF ; C6            DOT    FUNC         ACK
+FE8 ; C7            DOT    X
+FE9 ; C8            DOT    Y
+10C ; C9            MOVI   #0,T
+FEC ; CA            DOT    T            Ausgaenge auf 0
+F07 ; CB            RET
+978 ; CC getnib:    CMPI   #7,KQ
+119 ; CD            MOVI   #1,NV        Zero 0 = erster Durchlauf (Carry bleibt)
+DD1 ; CE gw:        BRC    g8
+F0D ; CF            EXRL                M0-M7 nach R0-R7 (und beim zweiten Mal zurueck)
+CD4 ; D0            GOTO   g0
+F0F ; D1 g8:        EXRA                M8-MF nach R0-R7 (und zurueck)
+F0E ; D2            EXRM
+F0F ; D3            EXRA
+EFF ; D4 g0:        BRZ    gret         zweiter Durchlauf: fertig
+F98 ; D5            SHR    KQ
+DE3 ; D6            BRC    g1
+F98 ; D7            SHR    KQ
+DDE ; D8            BRC    g2
+F98 ; D9            SHR    KQ
+049 ; DA            MOV    r4,NV
+DEE ; DB            BRC    gc
+009 ; DC            MOV    r0,NV
+CEE ; DD            GOTO   gc
+F98 ; DE g2:        SHR    KQ
+069 ; DF            MOV    r6,NV
+DEE ; E0            BRC    gc
+029 ; E1            MOV    r2,NV
+CEE ; E2            GOTO   gc
+F98 ; E3 g1:        SHR    KQ
+DEA ; E4            BRC    g3
+F98 ; E5            SHR    KQ
+059 ; E6            MOV    r5,NV
+DEE ; E7            BRC    gc
+019 ; E8            MOV    r1,NV
+CEE ; E9            GOTO   gc
+F98 ; EA g3:        SHR    KQ
+079 ; EB            MOV    r7,NV
+DEE ; EC            BRC    gc
+039 ; ED            MOV    r3,NV
+F98 ; EE gc:        SHR    KQ           KQ war das oberste Bit: Carry = obere Haelfte, Zero 1 = zweiter Durchlauf
+CCE ; EF            GOTO   gw
+16C ; F0 gen4:      MOVI   #6,CNT       vier Reihen: 6, 4, 2, 0 und dann E ohne Uebertrag
+F05 ; F1 g4:        RND
+020 ; F2            MOV    r2,r0        Reihen nachruecken
+031 ; F3            MOV    r3,r1
+042 ; F4            MOV    r4,r2
+053 ; F5            MOV    r5,r3
+064 ; F6            MOV    r6,r4
+075 ; F7            MOV    r7,r5
+0F7 ; F8            MOV    rF,r7        rechte Haelfte: dritte Zufallsziffer ...
+377 ; F9            ANDI   #7,r7        ... rechte Spalte immer Durchgang Nord
+0D6 ; FA g4w:       MOV    rD,r6        linke Haelfte: erste Zufallsziffer
+5FE ; FB            ADDI   #F,rE        je nach zweiter Ziffer 1-16 Runden warten: der Zaehler
+DFA ; FC            BRC    g4w          hinter RND laeuft dadurch unregelmaessig weiter
+5EC ; FD            ADDI   #E,CNT
+DF1 ; FE            BRC    g4
+F07 ; FF gret:      RET
