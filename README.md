@@ -37,6 +37,63 @@ Wenn du Glück hast, ist deine Startposition nahe am Ausgang, und wenn du richti
 
 Dass nach dem Finden des Ausgangs gleich ein neuer Irrgarten kommt, scheint vielleicht etwas unfair - ist aber letztlich nur eine Analogie des Lebens.
 
+## Strategie: die rechte Hand an der Wand
+
+Wer keinen Plan zeichnen will, kommt mit einer einfachen Regel immer ans Ziel: Eine Hand bleibt an der rechten Wand. In jedem Raum wird in dieser Reihenfolge geprüft:
+
+1. Rechts offen: Taste 3, dann 2.
+2. Sonst vorn frei: Taste 2.
+3. Sonst links offen: Taste 1, dann 2.
+4. Sonst Sackgasse: Taste 0, dann 2.
+
+Das klappt, weil der Irrgarten keine Schleifen und keine Inseln hat: Die Regel führt an jeder Wand entlang und irgendwann in den Ausgang, egal wo der Start liegt. Im schlechtesten Fall läuft man fast jeden Gang zweimal ab. Die linke Hand geht genauso, nur wechseln darf man unterwegs nicht.
+
+### Woran man es im Bild erkennt
+
+- **Rechts:** Spalte 8. Leuchtet sie in Wandfarbe, ist dort Wand. Ist sie dunkel, ist dort eine Öffnung.
+- **Vorn:** Das große Quadrat der Stirnwand (6x6 LEDs) heißt Wand direkt vor dir.
+- **Links:** Spalte 1, genauso wie rechts.
+- **Nur die äußeren Spalten zählen:** Dunkle Stellen in Spalte 7 oder 6 (oder 2 und 3) gehören zu Räumen weiter vorn.
+
+### Ein Beispiel aus dem Programm
+
+Die Bilder stammen aus einem Lauf im Emulator: links die Draufsicht mit dem bisherigen Weg, rechts das Bild auf der Matrix. Der gestrichelte Rahmen zeigt die Spalte, auf die es gerade ankommt.
+
+**Rechts offen.** Spalte 8 ist dunkel, vorn steht die Stirnwand. Taste 3.
+
+![Rechts offen](bilder/rechts-offen.svg)
+
+**Nach dem Drehen sofort vor.** Taste 2, ohne neu zu prüfen. Nach einer Rechtsdrehung liegt rechts, was eben hinter dir war, also meist der Gang, aus dem du kommst. Wer jetzt wieder „rechts offen“ liest, läuft zurück.
+
+![Nach dem Drehen](bilder/nach-dem-drehen.svg)
+
+**Sackgasse.** Rechts, vorn und links Wand. Taste 0, dann 2. Die Regel führt in Sackgassen hinein und wieder heraus, das ist kein Fehler.
+
+![Sackgasse](bilder/sackgasse.svg)
+
+**Geradeaus.** Rechts ist Wand, vorn ist frei. Taste 2.
+
+![Geradeaus](bilder/geradeaus.svg)
+
+**Links offen.** Rechts Wand, vorn Wand, Spalte 1 ist dunkel. Taste 1, dann 2.
+
+![Links offen](bilder/links-offen.svg)
+
+**Ausgang in Sicht.** Das dunkle Loch im Boden vor der Stirnwand. Jetzt darf man die Regel verlassen und geradeaus hineingehen.
+
+![Ausgang in Sicht](bilder/ausgang-in-sicht.svg)
+
+Der ganze Weg dieses Beispiels, 17 Blicke vom Start bis zum Ausgang:
+
+![Der ganze Weg](bilder/weg.svg)
+
+### Worauf man achten muss
+
+- **Drehen und Gehen gehören zusammen:** nach 1, 3 oder 0 immer sofort 2.
+- **Vor einer Wand tut sich nichts:** Taste 2 ändert dann das Bild nicht. Erst schauen, ob vorn frei ist, sonst verzählt man sich.
+- **Auf das Bild warten:** Ein Blick braucht etwa 2,6 Sekunden. Die nächste Taste erst drücken, wenn das Bild steht.
+- **Hand nie wechseln:** Wer zwischendurch auf links umsteigt, kann im Kreis laufen.
+
 ## Start
 
 1. Matrix einschalten („LED on“ in der Weboberfläche).
