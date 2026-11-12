@@ -92,7 +92,7 @@ Der ganze Weg dieses Beispiels, 17 Blicke vom Start bis zum Ausgang:
 - **Drehen und Gehen gehören zusammen:** nach 1, 3 oder 0 immer sofort 2.
 - **Vor einer Wand tut sich nichts:** Taste 2 ändert dann das Bild nicht. Erst schauen, ob vorn frei ist, sonst verzählt man sich.
 - **Auf das Bild warten:** Ein Blick braucht etwa 2,6 Sekunden. Die nächste Taste erst drücken, wenn das Bild steht.
-- **Hand nie wechseln:** Wer zwischendurch auf links umsteigt, kann im Kreis laufen.
+- **Hand nie wechseln:** Wer zwischendurch auf links umsteigt, läuft dieselben Gänge noch einmal ab.
 
 ## Start
 
