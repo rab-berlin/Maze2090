@@ -1,11 +1,11 @@
 # Userscript fuer den 3D-Irrgarten (irrgarten.mic) auf dem ESP2090 Studio
-# Setzt die Farbmatrix und endet: Waende weiss, Boden tuerkis (unten 8, 6, 4 LEDs).
+# Setzt die Farbmatrix und endet: Waende gelb, Boden blau (unten 8, 6, 4 LEDs).
 # Einmal nach dem Einschalten des ESP starten ("Run"), die Matrix muss eingeschaltet sein ("LED on").
 # Danach holt der Irrgarten die Farben bei jedem RUN selbst vom Stapel der Matrix zurueck.
-# Die Stirnwand faerbt das Programm selbst (dunkelblau).
+# Die Stirnwand faerbt das Programm selbst (oliv).
 
-W = "weiss"      # Waende
-B = "tuerkis"    # Boden
+W = "gelb"       # Waende
+B = "blau"       # Boden
 
 farben = [
     [W, W, W, W, W, W, W, W],

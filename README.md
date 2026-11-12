@@ -16,9 +16,9 @@
 ## Bild
 
 - **Sichttiefe:** 3 Räume. Bleibt die Mitte dunkel, geht der Gang noch weiter.
-- **Boden:** türkis, die untersten drei Zeilen mit 8, 6 und 4 LEDs.
-- **Seitenwände:** weiß, in Spalte 1/8, 2/7 und 3/6 für den 1., 2. und 3. Raum. Eine Öffnung zur Seite bleibt dunkel.
-- **Stirnwand:** dunkelblau, ein Quadrat in der Mitte mit 6, 4 oder 2 LEDs Kante, je nach Entfernung.
+- **Boden:** blau, die untersten drei Zeilen mit 8, 6 und 4 LEDs.
+- **Seitenwände:** gelb, in Spalte 1/8, 2/7 und 3/6 für den 1., 2. und 3. Raum. Eine Öffnung zur Seite bleibt dunkel.
+- **Stirnwand:** oliv (ein dunkles Gelb, wie dieselbe Mauer im Schatten), ein Quadrat in der Mitte mit 6, 4 oder 2 LEDs Kante, je nach Entfernung.
 
 ## Bedienung
 
@@ -40,19 +40,19 @@ Dass nach dem Finden des Ausgangs gleich ein neuer Irrgarten kommt, scheint viel
 ## Start
 
 1. Matrix einschalten („LED on“ in der Weboberfläche).
-2. Einmal nach dem Einschalten des ESP: das Userscript `irrgarten_farben.py` mit **Run** starten. Es setzt die Farben (Wände weiß, Boden türkis) und endet sofort.
+2. Einmal nach dem Einschalten des ESP: das Userscript `irrgarten_farben.py` mit **Run** starten. Es setzt die Farben (Wände gelb, Boden blau) und endet sofort.
 3. RESET, `HALT` `NEXT` `00` `RUN`. Nach etwa 6 Sekunden steht der erste Blick.
 
 Für jeden weiteren RUN reichen RESET und RUN: Das Programm holt die Farben selbst vom Stapel der Matrix zurück. Nur wenn zwischendurch ein anderes Programm den Farbstapel benutzt hat, den ESP neu starten und das Userscript noch einmal laufen lassen.
 
 Die Matrix muss wach sein. Hat ein anderes Programm sie schlafen gelegt, wartet der Irrgarten, bis sie geweckt wird.
 
-**Ohne Userscript** läuft das Programm auch und bleibt spielbar: Wände und Boden sind dann beide rot, die Standardfarbe der Matrix. Die Stirnwand ist weiter dunkelblau, das Loch am Ausgang weiter dunkel. So sieht es auch im Emulator2090 aus, der keine Userscripts kennt.
+**Ohne Userscript** läuft das Programm auch und bleibt spielbar: Wände und Boden sind dann beide rot, die Standardfarbe der Matrix. Die Stirnwand ist weiter oliv, das Loch am Ausgang weiter dunkel. So sieht es auch im Emulator2090 aus, der keine Userscripts kennt.
 
 ## Farben ändern
 
-- **Wände und Boden:** im Userscript, `W = "weiss"` und `B = "tuerkis"`. Möglich sind die Farbnamen von `setColors`.
-- **Stirnwand:** im Programm an Adresse 01, Befehl `1C8`. Die mittlere Ziffer ist die Farbnummer der Matrix (C = dunkelblau).
+- **Wände und Boden:** im Userscript, `W = "gelb"` und `B = "blau"`. Möglich sind die Farbnamen von `setColors`. Hebt sich das dunkle Loch am Ausgang zu wenig vom blauen Boden ab, hilft `B = "tuerkis"`.
+- **Stirnwand:** im Programm an Adresse 01, Befehl `1D8`. Die mittlere Ziffer ist die Farbnummer der Matrix (D = oliv).
 
 ## Technik
 

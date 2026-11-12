@@ -1,11 +1,12 @@
 ; irrgarten - 3D-Irrgarten fuer Busch Microtronic 2090 mit dem ESP2090 Studio (8x8-LED-Matrix)
-; Version 08: Das Userscript ist nur noch einmal nach dem Einschalten des ESP noetig, nicht vor jedem RUN.
+; Version 09: neue Farben - Waende gelb, Boden blau (beides im Userscript), Stirnwand oliv.
+;   Version 08: Das Userscript ist nur noch einmal nach dem Einschalten des ESP noetig, nicht vor jedem RUN.
 ;   Version 07: Reihen mit wechselnder Seitenrichtung (kein schraeger Zug mehr im Irrgarten); die Grundfarben
 ;   legt das Userscript irrgarten_farben.py an, das spart 15 Schritte.
 ;   Version 06: Start in einem beliebigen der 64 Raeume mit zufaelliger Blickrichtung; kein Wecken der Matrix mehr.
 ;   Version 05: Bedienung mit den Tasten des 2090 (KIN) statt mit Tastern; die Matrix bleibt wach.
-;   Bild wie Version 04: Waende weiss, Boden tuerkis (drei Zeilen), Stirnwand dunkelblau als Quadrat in der
-;   Mitte, Ausgang als Loch im Boden direkt vor der Stirnwand.
+;   Bild wie Version 04: Waende, Boden (drei Zeilen), Stirnwand als Quadrat in der Mitte, Ausgang als Loch
+;   im Boden direkt vor der Stirnwand.
 ;
 ; Start: Reset, Matrix einschalten (Weboberflaeche: LED on), einmal nach dem Einschalten des ESP das
 ;   Userscript irrgarten_farben.py mit Run starten (es setzt die Farbmatrix und endet), dann RUN.
@@ -37,7 +38,7 @@
 ;   und legt die Farbmatrix wieder darauf. Je Blick: Farben vom Stapel holen (peek), ein Bild im Blockmodus (Waende und Boden),
 ;   dann zwei Rechtecke ab der Ecke (N,N): erst in Zeichenart 3 (Pixel aus) die unterste Zeile der Stirnwand
 ;   - beim Ausgang eine Zeile tiefer und damit auch das Loch -, dann die Stirnwand in Zeichenart 1.
-;   Farben: Wand und Boden im Userscript, Stirnwand MOVI #C,X an Adresse 01 (dunkelblau).
+;   Farben: Wand und Boden im Userscript, Stirnwand MOVI #D,X an Adresse 01 (oliv).
 ;
 ;   Befehle an die Matrix: warten auf REQ (hoechstens 28 ms), dann ACK und Nibbles - spaetestens 56 ms nach
 ;   REQ, der ESP wartet 70 ms. Das Bild hat deshalb seine eigene Warteschleife.
@@ -50,7 +51,7 @@
 ;   Beim Zeichnen: FUNC = ACK, X/Y = Nibbles, Q = REQ, dann F fuer Zeile 1; A1/B1, A2/B2, A6/B6, A7/B7 = Bildzeilen 2, 3, 7, 8.
 ;
 F02 ; 00            DISOUT              Anzeige aus: 9,3 ms je Befehl (Takt der Matrix)
-1C8 ; 01            MOVI   #C,X         Farbe der Stirnwand: bleibt aktiv
+1D8 ; 01            MOVI   #D,X         Farbe der Stirnwand (13 = oliv): bleibt aktiv
 BC1 ; 02            CALL   colr
 1DF ; 03            MOVI   #D,FUNC
 198 ; 04            MOVI   #9,X
