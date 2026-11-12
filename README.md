@@ -23,15 +23,15 @@ Für jeden weiteren RUN reichen RESET und RUN. Das Userscript braucht es nur noc
 
 Die Matrix muss wach sein. Hat ein anderes Programm sie schlafen gelegt, wartet der Irrgarten, bis sie geweckt wird.
 
-**Ohne Userscript** läuft das Programm auch und bleibt spielbar: Seitenwände und Boden sind dann alle rot, die Standardfarbe der Matrix. Stirnwand und Loch färbt das Programm selbst, sie bleiben violett und dunkel. So sieht es auch im Emulator2090 aus, der keine Userscripts kennt.
+**Ohne Userscript** läuft das Programm auch und bleibt spielbar: Seitenwände und Boden sind dann alle rot, die Standardfarbe der Matrix. Stirnwand und Loch färbt das Programm selbst, sie bleiben blau und dunkel. So sieht es auch im Emulator2090 aus, der keine Userscripts kennt.
 
 ## Bild
 
 - **Sichttiefe:** 3 Räume. Bleibt die Mitte dunkel, geht der Gang noch weiter.
-- **Farben nach Entfernung:** Seitenwände und Boden werden zur Ferne hin dunkler, das gibt mehr Tiefe.
-- **Boden:** die untersten drei Zeilen mit 8, 6 und 4 LEDs, von nah nach fern weiß, türkis, blau.
-- **Seitenwände:** Spalte 1/8, 2/7 und 3/6 für den 1., 2. und 3. Raum, gelb, orange, rot. Eine Öffnung zur Seite bleibt dunkel.
-- **Stirnwand:** violett, ein Quadrat in der Mitte mit 6, 4 oder 2 LEDs Kante, je nach Entfernung.
+- **Ringe nach Entfernung:** Seitenwände und Boden eines Raums bilden einen Ring in einer Farbe, zur Ferne hin dunkler: weiß, gelb, orange für den 1., 2. und 3. Raum. Das gibt den Eindruck eines Tunnels.
+- **Boden:** die untersten drei Zeilen mit 8, 6 und 4 LEDs.
+- **Seitenwände:** Spalte 1/8, 2/7 und 3/6 für den 1., 2. und 3. Raum. Eine Öffnung zur Seite bleibt dunkel.
+- **Stirnwand:** blau, ein Quadrat in der Mitte mit 6, 4 oder 2 LEDs Kante, je nach Entfernung.
 - **Ausgang:** ein dunkles Loch im Boden direkt vor der Stirnwand, so breit wie sie.
 
 ## Bedienung
@@ -53,8 +53,8 @@ Dass nach dem Finden des Ausgangs gleich ein neuer Irrgarten kommt, scheint viel
 
 ## Farben ändern
 
-- **Seitenwände und Boden:** im Userscript, `G, O, R` für die Seitenwände und `W, T, B` für den Boden, jeweils nah, mittel, fern. Möglich sind die Farbnamen von `setColors`. Nach einer Änderung das Userscript noch einmal starten, dann RESET und RUN.
-- **Stirnwand:** im Programm an Adresse 88, Befehl `178`. Die mittlere Ziffer ist die Farbnummer der Matrix (7 = violett).
+- **Seitenwände und Boden:** im Userscript, `N, M, F` für die Ringe nah, mittel, fern. Möglich sind die Farbnamen von `setColors`. Nach einer Änderung das Userscript noch einmal starten, dann RESET und RUN.
+- **Stirnwand:** im Programm an Adresse 88, Befehl `168`. Die mittlere Ziffer ist die Farbnummer der Matrix (6 = blau).
 - **Loch am Ausgang:** im Programm an Adresse 7C, Befehl `108` (0 = schwarz).
 
 ## Immer an der Wand lang...
@@ -72,7 +72,7 @@ Das klappt, weil der Irrgarten keine Schleifen und keine Inseln hat: Die Regel f
 
 <img src="bilder/legende.png" width="390" alt="Drei Beispielbilder der Matrix, Spalte 1 und 8 sind markiert">
 
-- **Rechts** ist Spalte 8, **links** ist Spalte 1. Leuchtet die Spalte (gelb), ist dort Wand. Ist sie dunkel, ist dort eine Öffnung.
+- **Rechts** ist Spalte 8, **links** ist Spalte 1. Leuchtet die Spalte (weiß), ist dort Wand. Ist sie dunkel, ist dort eine Öffnung.
 - **Vorn** steht eine Wand, wenn das Quadrat der Stirnwand groß ist (6x6 LEDs). Ist es kleiner oder fehlt es, ist der nächste Raum frei.
 - **Bild A:** rechts offen, links Wand, vorn frei (das Quadrat ist nur 4x4, die Stirnwand steht einen Raum weiter).
 - **Bild B:** rechts und links Wand, vorn frei.

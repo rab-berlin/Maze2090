@@ -1,23 +1,22 @@
 # Userscript fuer den 3D-Irrgarten (irrgarten.mic) auf dem ESP2090 Studio
-# Setzt die Farbmatrix und endet. Die Farben werden mit der Entfernung dunkler:
-#   Seitenwaende gelb, orange, rot (1., 2., 3. Raum), Boden weiss, tuerkis, blau (unten 8, 6, 4 LEDs).
+# Setzt die Farbmatrix und endet. Seitenwaende und Boden eines Raums bilden einen Ring in einer Farbe,
+#   zur Ferne hin dunkler: weiss (1. Raum), gelb (2. Raum), orange (3. Raum).
 # Einmal nach dem Einschalten des ESP starten ("Run"), die Matrix muss eingeschaltet sein ("LED on").
 # Fuer weitere RUNs ist es nicht noetig. Nach einer Aenderung der Farben hier: noch einmal starten, dann RUN.
-# Die Stirnwand (violett) und das Loch am Ausgang (schwarz) faerbt das Programm selbst.
+# Die Stirnwand (blau) und das Loch am Ausgang (schwarz) faerbt das Programm selbst.
 
-G, O, R = "gelb", "orange", "rot"          # Seitenwaende: nah, mittel, fern
-W, T, B = "weiss", "tuerkis", "blau"       # Boden: nah, mittel, fern
+N, M, F = "weiss", "gelb", "orange"        # Ring nah, mittel, fern
 _ = "schwarz"                              # hier leuchtet nur die Stirnwand, Farbe egal
 
 farben = [
-    [G, _, _, _, _, _, _, G],
-    [G, O, _, _, _, _, O, G],
-    [G, O, R, _, _, R, O, G],
-    [G, O, R, _, _, R, O, G],
-    [G, O, R, _, _, R, O, G],
-    [G, O, B, B, B, B, O, G],
-    [G, T, T, T, T, T, T, G],
-    [W, W, W, W, W, W, W, W],
+    [N, _, _, _, _, _, _, N],
+    [N, M, _, _, _, _, M, N],
+    [N, M, F, _, _, F, M, N],
+    [N, M, F, _, _, F, M, N],
+    [N, M, F, _, _, F, M, N],
+    [N, M, F, F, F, F, M, N],
+    [N, M, M, M, M, M, M, N],
+    [N, N, N, N, N, N, N, N],
 ]
 
 setColors([c for zeile in farben for c in zeile])

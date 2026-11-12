@@ -1,6 +1,6 @@
 ; irrgarten - 3D-Irrgarten fuer Busch Microtronic 2090 mit dem ESP2090 Studio (8x8-LED-Matrix)
-; Version 12: Farben nach Entfernung - Seitenwaende gelb, orange, rot, Boden weiss, tuerkis, blau (beides im
-;   Userscript), Stirnwand violett, Loch am Ausgang schwarz.
+; Version 13: Farben als Ringe nach Entfernung - Seitenwaende und Boden je Raum gleich: weiss, gelb, orange
+;   (im Userscript), Stirnwand blau, Loch am Ausgang schwarz.
 ;   Version 11: Das Loch am Ausgang wird nur in der Farbmatrix gefaerbt und erscheint zusammen mit der Stirnwand.
 ;   Version 10: Die Farbmatrix wird nach jeder Stirnwand sofort wieder hergestellt (die Anzeige bleibt dabei
 ;   stehen). Beim RUN wird nichts mehr vom Stapel geholt: neue Farben aus dem Userscript gelten sofort.
@@ -37,14 +37,14 @@
 ;   zur Seite bleibt dunkel. Stirnwand hinter dem 1., 2., 3. Raum: Quadrat in der Mitte mit 6, 4, 2 Pixeln
 ;   Kante (Spalte und Zeile 2-7, 3-6, 4-5); es verdeckt den Boden dahinter.
 ;   Bleibt die Mitte dunkel, geht der Gang weiter als 3 Raeume.
-;   Farben: Die Farbmatrix kommt vom Userscript (Seitenwaende je Spalte, Boden je Zeile). Am Start legt das
+;   Farben: Die Farbmatrix kommt vom Userscript (ein Ring je Raum: Seitenwaende und Boden). Am Start legt das
 ;   Programm sie auf den Stapel (ACK 13). Je Blick: ein Bild im Blockmodus (Waende und Boden). Mit
 ;   Stirnwand dann: Farbe schwarz, Cursor auf die Ecke (N,N), Rechteck in Zeichenart 0 (nur Farbe, die Anzeige
 ;   bleibt) ueber die unterste Zeile der Stirnwand - beim Ausgang eine Zeile tiefer und damit auch ueber das
-;   Loch, dessen Pixel als Boden schon an sind -, Farbe violett, Stirnwand in Zeichenart 1. Erst die Stirnwand
+;   Loch, dessen Pixel als Boden schon an sind -, Farbe blau, Stirnwand in Zeichenart 1. Erst die Stirnwand
 ;   baut die Anzeige neu auf: Stirnwand und Loch erscheinen zugleich. Danach die Farbmatrix vom
 ;   Stapel zurueckholen (peek): Das baut die Anzeige nicht neu auf, die Farbmatrix ist wieder sauber.
-;   Farben: Wand und Boden im Userscript, Loch MOVI #0,X (schwarz), Stirnwand MOVI #7,X (violett), siehe draw.
+;   Farben: Wand und Boden im Userscript, Loch MOVI #0,X (schwarz), Stirnwand MOVI #6,X (blau), siehe draw.
 ;
 ;   Befehle an die Matrix: warten auf REQ (hoechstens 28 ms), dann ACK und Nibbles - spaetestens 56 ms nach
 ;   REQ, der ESP wartet 70 ms. Das Bild hat deshalb seine eigene Warteschleife.
@@ -192,7 +192,7 @@ F88 ; 81            INV    X
 FC9 ; 85            SUBC   Y            Zeile N, beim Ausgang N-1
 BC3 ; 86            CALL   cmd          Rechteck in Zeichenart 0: nur Farbe, keine neue Anzeige
 089 ; 87            MOV    X,Y          7-N
-178 ; 88            MOVI   #7,X         Farbe der Stirnwand (7 = violett)
+168 ; 88            MOVI   #6,X         Farbe der Stirnwand (6 = blau)
 BC2 ; 89            CALL   colr
 098 ; 8A            MOV    Y,X
 588 ; 8B            ADDI   #8,X         7-N mit +8: Zeichenart 1
